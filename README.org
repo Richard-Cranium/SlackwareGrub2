@@ -1,3 +1,6 @@
 * Instructions
-Copy the file /09_slackware_linux/ into the directory /\\/etc/grub.d\\// and
-mark it executable.
+Copy the file /09_slackware_linux/ into the directory
+#+BEGIN_SRC 
+/etc/grub.d/
+#+END_SRC
+ and mark it executable.
