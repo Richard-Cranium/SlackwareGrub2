@@ -1,6 +1,18 @@
 * Instructions
-Copy the file /09_slackware_linux/ into the directory
+1) Copy the file /09_slackware_linux/ into the directory
 #+BEGIN_SRC 
 /etc/grub.d/
 #+END_SRC
- and mark it executable.
+2) Run the following command as root or with root priviledges:
+#+BEGIN_SRC sh
+  chmod +x /etc/grub.d/09_slackware_linux
+#+END_SRC 
+3) Run  the following command as root:
+#+BEGIN_SRC sh
+  grub-mkconfig -o /boot/grub/grub.cfg
+#+END_SRC
+If you are worried about the output of the above command, simply run...
+#+BEGIN_SRC sh
+  grub-mkconfig
+#+END_SRC
+...which will output everything to the console.
