@@ -158,3 +158,8 @@ list=`for i in /boot/vmlinu[xz]-huge-* /vmlinu[xz]-huge-* ; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
 process_list "${list}" "huge" "false"
+
+list=`for i in /boot/vmlinu[xz]-custom-* /vmlinu[xz]-custom-* ; do
+        if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
+      done`
+process_list "${list}" "custom" "true"
