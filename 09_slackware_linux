@@ -26,6 +26,7 @@ export TEXTDOMAIN=grub
 export TEXTDOMAINDIR="${datarootdir}/locale"
 
 CLASS="--class gnu-linux --class gnu --class os"
+SUPPORTED_INITS="sysvinit:/sbin/init systemd:/lib/systemd/systemd runit:/sbin/runit-init openrc:/sbin/openrc-init"
 
 if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
   OS=GNU/Linux
@@ -54,14 +55,23 @@ linux_entry ()
   os="$1"
   tag="$2"
   version="$3"
-  recovery="$4"
+  type="$4"
   args="$5"
-  if ${recovery} ; then
-    title="$(gettext "%s, with Linux %s [%s] (recovery mode)")"
-  else
-    title="$(gettext "%s, with Linux %s [%s]")"
-  fi
-  printf "menuentry \"${title}\" ${CLASS} {\n" "${os}" "${version}" "${tag}"
+
+  case $type in
+   init-*)
+     title="$(gettext "%s, with Linux %s [%s] (%s)")"
+     printf "menuentry \"${title}\" ${CLASS} {\n"  "${os}" "${version}" "${tag}" "${type#init-}"
+     ;;
+   recovery)
+     title="$(gettext "%s, with Linux %s [%s] (recovery mode)")"
+     printf "menuentry \"${title}\" ${CLASS} {\n" "${os}" "${version}" "${tag}"
+     ;;
+   *)
+     title="$(gettext "%s, with Linux %s [%s]")"
+     printf "menuentry \"${title}\" ${CLASS} {\n" "${os}" "${version}" "${tag}"
+    ;;
+  esac
   save_default_entry | sed -e "s/^/\t/"
 
   # Use ELILO's generic "efifb" when it's known to be available.
@@ -138,9 +148,16 @@ process_list ()
 	linux_entry "${OS}" "${tag}" "${version}" false \
 	    "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}"
 	if [ "x${GRUB_DISABLE_LINUX_RECOVERY}" != "xtrue" ]; then
-	    linux_entry "${OS}" "${tag}" "${version}" true \
+	    linux_entry "${OS}" "${tag}" "${version}" recovery \
 		"single ${GRUB_CMDLINE_LINUX}"
 	fi
+	for supported_init in ${SUPPORTED_INITS}; do
+	    init_path="${supported_init#*:}"
+	    if [ -x "${init_path}" ] && [ "$(readlink -f /sbin/init)" != "${init_path}" ]; then
+	        linux_entry "${OS}" "${tag}" "${version}" "init-${supported_init%%:*}" \
+		    "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT} init=${init_path}"
+	    fi
+	done
 
 	mylist=`echo $mylist | tr ' ' '\n' | grep -vx $linux | tr '\n' ' '`
     done
